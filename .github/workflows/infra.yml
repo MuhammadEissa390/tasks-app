@@ -1,0 +1,78 @@
+name: Terraform CI/CD - Infra
+
+on:
+  push:
+    paths:
+      - 'eks-infra/**'   # يشتغل بس لو حصل تغيير في فولدر infra
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      TF_WORKSPACE: dev
+
+    steps:
+      # -------------------------
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.5
+
+      # -------------------------
+      # Terraform Init
+      - name: Terraform Init
+        run: terraform -chdir=eks-infra init \
+          -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
+          -backend-config="key=terraform.tfstate" \
+          -backend-config="region=${{ env.AWS_REGION }}" \
+          -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_LOCK_TABLE }}"
+
+      # -------------------------
+      # Terraform Format & Validate
+      - name: Terraform Format & Validate
+        run: |
+          terraform -chdir=eks-infra fmt -check
+          terraform -chdir=eks-infra validate
+
+      # -------------------------
+      # Terraform Lint (tflint)
+      - name: Terraform Lint
+        uses: wata727/tflint-action@v1.2.8
+        with:
+          tfdir: eks-infra
+
+      # -------------------------
+      # Security check (Checkov)
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov@v2.2.107
+        with:
+          directory: eks-infra
+          quiet: false
+
+      # -------------------------
+      # Terraform Plan
+      - name: Terraform Plan
+        id: plan
+        run: terraform -chdir=eks-infra plan -out=tfplan
+
+      # -------------------------
+      # Manual Approval Step
+      - name: Manual Approval
+        if: github.event_name == 'workflow_dispatch'
+        uses: hmarr/auto-approve-action@v2
+        with:
+          message: 'Approve Terraform Apply'
+
+      # -------------------------
+      # Terraform Apply
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch'
+        run: terraform -chdir=eks-infra apply -auto-approve tfplan
