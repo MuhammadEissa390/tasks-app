@@ -231,11 +231,6 @@ docker-compose exec postgres psql -U taskuser -d taskdb
 SELECT * FROM tasks;  # View all tasks
 ```
 
-### Performance Tuning
-- Adjust worker processes in `gunicorn.conf.py`
-- Enable database connection pooling
-- Add Redis for caching
-- Configure NGINX caching
 
 
 
