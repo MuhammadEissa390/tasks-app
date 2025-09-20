@@ -61,7 +61,7 @@ jobs:
       - name: Security Scan backend with Trivy
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: ghcr.io/${{ env.REPO_LOWER }}$IMAGE_BACKEND:${{ github.sha }}
+          image-ref: ghcr.io/${{ env.REPO_LOWER }}/tasks-app-backend:${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
           vuln-type: 'os,library'
@@ -70,7 +70,7 @@ jobs:
       - name: Security Scan Frontend with Trivy
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: ghcr.io/${{ env.REPO_LOWER }}$IMAGE_FRONTEND:${{ github.sha }}
+          image-ref: ghcr.io/${{ env.REPO_LOWER }}/tasks-app-frontend:${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
           vuln-type: 'os,library'
