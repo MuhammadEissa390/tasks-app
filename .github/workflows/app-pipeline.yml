@@ -41,7 +41,7 @@ jobs:
      
       - name: Push Backend Image
         run: |
-          IMAGE_BACKEND=ghcr.io/${{ env.REPO_OWNER_LC }}-backend
+          IMAGE_BACKEND=ghcr.io/${{ env.REPO_OWNER_LC }}-backend && github.repository_owner.toLowerCase() }}-backend
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:${{ github.sha }}
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:latest
           docker push $IMAGE_BACKEND:${{ github.sha }}
@@ -49,7 +49,7 @@ jobs:
 
       - name: Push Frontend Image
         run: |
-          IMAGE_FRONTEND=ghcr.io/${{ env.REPO_OWNER_LC }}-frontend
+          IMAGE_FRONTEND=ghcr.io/${{ env.REPO_OWNER_LC }}-frontend && github.repository_owner.toLowerCase() }}-frontend
           docker tag tasks-app-frontend:latest $IMAGE_FRONTEND:${{ github.sha }}
           docker tag tasks-app-frontend:latest $IMAGE_FRONTEND:latest
           docker push $IMAGE_FRONTEND:${{ github.sha }}
