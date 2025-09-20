@@ -38,7 +38,7 @@ jobs:
           docker compose up -d --build
           docker ps
 
-      - name: Push to registries
+      - name: Push and tag backend
         run: |
           IMAGE_BACKEND=ghcr.io/${{ env.REPO_LOWER }}/tasks-app-backend
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:${{ github.sha }}
@@ -47,15 +47,21 @@ jobs:
           docker push $IMAGE_BACKEND:latest
           
 
-      - name: Push Frontend Image
+      - name: Push and tag frontend
         run: |
+          IMAGE_FRONTEND=ghcr.io/${{ env.REPO_LOWER }}/tasks-app-frontend
+          docker tag tasks-app-frontend:latest $IMAGE_FRONTEND:${{ github.sha }}
+          docker tag tasks-app-frontend:latest $IMAGE_FRONTEND:latest
+          docker push $IMAGE_FRONTEND:${{ github.sha }}
+          docker push $IMAGE_FRONTEND:latest
+          
           
         
       # Security Scan with Trivy
       - name: Security Scan backend with Trivy
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
+          image-ref: ghcr.io/${{ env.REPO_LOWER }}$IMAGE_BACKEND:${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
           vuln-type: 'os,library'
@@ -64,7 +70,7 @@ jobs:
       - name: Security Scan Frontend with Trivy
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
+          image-ref: ghcr.io/${{ env.REPO_LOWER }}$IMAGE_FRONTEND:${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
           vuln-type: 'os,library'
