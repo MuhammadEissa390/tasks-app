@@ -2,8 +2,8 @@ name: Terraform CI/CD - Infra
 
 on:
   push:
-    paths:
-      - 'eks-infra/**'   # run only when infra folder changes
+    # paths:
+    #   - 'eks-infra/**'  # run only when infra folder changes
   workflow_dispatch:
 
 permissions:
