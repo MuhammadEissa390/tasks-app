@@ -40,12 +40,11 @@ jobs:
 
       - name: Push to registries
         run: |
-          IMAGE_BACKEND=ghcr.io/${{ github.repository_owner && github.repository_owner.toLowerCase() }}/tasks-app-backend
-          echo "Backend IMAGE=$IMAGE_BACKEND"
+          IMAGE_BACKEND=ghcr.io/${{ env.REPO_OWNER_LC }}/tasks-app-backend
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:${{ github.sha }}
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:latest
           docker push $IMAGE_BACKEND:${{ github.sha }}
-          docker push $IMAGE_BACKEND:latest   
+          docker push $IMAGE_BACKEND:latest
           
 
       - name: Push Frontend Image
