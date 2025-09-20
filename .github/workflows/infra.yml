@@ -44,6 +44,11 @@ jobs:
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: v0.51.1  # pick a stable version [web:158]
+      - name: TFLint init and scan
+        run: |
+          tflint --init
+          tflint eks-infra
+      
 
       # Terraform Init (use -chdir and multiple backend-config lines)
       - name: Terraform Init
@@ -67,11 +72,6 @@ jobs:
           terraform -chdir=eks-infra fmt -check
           terraform -chdir=eks-infra validate
 
-      # TFLint (lint Terraform code in eks-infra dir)
-      - name: Terraform Lint (tflint)
-        run: |
-          tflint --init
-          tflint eks-infra
         # Alternatively: use wata727/tflint-action, but running CLI is simpler and current
 
       # Security check (Checkov) for IaC
