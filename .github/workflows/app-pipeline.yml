@@ -42,7 +42,10 @@ jobs:
 
       - name: Push images with Docker Compose
         run: docker compose push
-      
+        
+      - name: List Docker Images
+        run: docker images 
+        
       # Security Scan with Trivy
       - name: Security Scan backend with Trivy
         uses: aquasecurity/trivy-action@0.16.1
