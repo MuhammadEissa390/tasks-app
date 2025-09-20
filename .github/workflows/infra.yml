@@ -12,12 +12,12 @@ jobs:
     env:
       AWS_REGION: us-east-1
       TF_WORKSPACE: dev
-
+ 
     steps:
       # -------------------------
       # Checkout repo
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@master
 
       # -------------------------
       # Setup Terraform
