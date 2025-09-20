@@ -41,15 +41,19 @@ jobs:
      
       - name: Push Backend Image
         run: |
-          IMAGE=ghcr.io/muhammadeissa390/tasks-app/backend:${{ github.sha }}
-          docker tag tasks-app-backend:latest ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
-          docker push ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
+          IMAGE_BACKEND=ghcr.io/${{ env.REPO_OWNER_LC }}-backend
+          docker tag tasks-app-backend:latest $IMAGE_BACKEND:${{ github.sha }}
+          docker tag tasks-app-backend:latest $IMAGE_BACKEND:latest
+          docker push $IMAGE_BACKEND:${{ github.sha }}
+          docker push $IMAGE_BACKEND:latest
 
       - name: Push Frontend Image
         run: |
-           IMAGE=ghcr.io/muhammadeissa390/tasks-app/frontend:${{ github.sha }}
-           docker tag tasks-app-frontend:latest ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
-           docker push ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
+          IMAGE_FRONTEND=ghcr.io/${{ env.REPO_OWNER_LC }}-frontend
+          docker tag tasks-app-frontend:latest $IMAGE_FRONTEND:${{ github.sha }}
+          docker tag tasks-app-frontend:latest $IMAGE_FRONTEND:latest
+          docker push $IMAGE_FRONTEND:${{ github.sha }}
+          docker push $IMAGE_FRONTEND:latest
         
       # Security Scan with Trivy
       - name: Security Scan backend with Trivy
