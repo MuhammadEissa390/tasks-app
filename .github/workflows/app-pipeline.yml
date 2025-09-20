@@ -32,20 +32,17 @@ jobs:
           echo "Original: ${{ github.repository }}"
           echo "Lowercase: ${{ env.REPO_LOWER }}"
 
-      # Build & Push Image
-      - name: Build & Push Backend
+      # Build Image With Docker Composerun: 
+      - name: Build images with Docker Compose
         run: |
-          BACKEND_IMAGE=ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
-          echo "BACKEND_IMAGE=$BACKEND_IMAGE" >> $GITHUB_ENV
-          docker build -t $BACKEND_IMAGE ./backend
-          docker push $BACKEND_IMAGE
+          IMAGE_TAG=ghcr.io/${{ env.REPO_LOWER }}
+          docker compose build \
+            --build-arg IMAGE_TAG=$IMAGE_TAG \
+            --build-arg GIT_SHA=${{ github.sha }}
 
-      - name: Build & Push Frontend
-        run: |
-          FRONTEND_IMAGE=ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
-          echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
-          docker build -t $FRONTEND_IMAGE ./frontend
-          docker push $FRONTEND_IMAGE
+      - name: Push images with Docker Compose
+        run: docker compose push
+      
       # Security Scan with Trivy
       - name: Security Scan with Trivy
         uses: aquasecurity/trivy-action@0.16.1
