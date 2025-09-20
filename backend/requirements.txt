@@ -1,0 +1,16 @@
+# Core Flask
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+Flask-CORS==4.0.0
+
+# Database
+psycopg2-binary==2.9.7
+
+# WSGI Server
+gunicorn==21.2.0
+
+# Environment
+python-dotenv==1.0.0
+
+
