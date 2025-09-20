@@ -41,13 +41,13 @@ jobs:
      
       - name: Push Backend Image
         run: |
-          IMAGE=ghcr.io/ORG/tasks-app/backend:${{ github.sha }}
+          IMAGE=ghcr.io/muhammadeissa390/tasks-app/backend:${{ github.sha }}
           docker tag tasks-app-backend:latest ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
           docker push ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
 
       - name: Push Frontend Image
         run: |
-           IMAGE=ghcr.io/ORG/tasks-app/frontend:${{ github.sha }}
+           IMAGE=ghcr.io/muhammadeissa390/tasks-app/frontend:${{ github.sha }}
            docker tag tasks-app-frontend:latest ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
            docker push ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
         
