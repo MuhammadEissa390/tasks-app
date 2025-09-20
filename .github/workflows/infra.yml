@@ -51,11 +51,16 @@ jobs:
 
       # -------------------------
       # Security check (Checkov)
-      - name: Checkov Scan
-        uses: bridgecrewio/checkov@v2.2.107
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
         with:
-          directory: eks-infra
-          quiet: false
+          directory: .
+          soft_fail: true
+          download_external_modules: true
+          github_pat: ${{ secrets.GH_PAT }}
+        env:
+          GITHUB_OVERRIDE_URL: true  # optio
 
       # -------------------------
       # Terraform Plan
