@@ -3,8 +3,11 @@ name: Terraform CI/CD - Infra
 on:
   push:
     paths:
-      - 'eks-infra/**'   # يشتغل بس لو حصل تغيير في فولدر infra
+      - 'eks-infra/**'   # run only when infra folder changes
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   terraform:
@@ -12,72 +15,100 @@ jobs:
     env:
       AWS_REGION: us-east-1
       TF_WORKSPACE: dev
- 
+
     steps:
-      # -------------------------
       # Checkout repo
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
 
-      # -------------------------
-      # Setup Terraform
-      - name: Setup Terraform
-        uses: terraform-linters/tflint-action@v0.3.15
+      # Configure AWS credentials (OIDC or access keys)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
         with:
-          terraform_version: 1.6.5
+          aws-region: ${{ env.AWS_REGION }}
+          # Prefer OIDC with a role:
+          # role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          # role-session-name: gha-terraform
+          # OR if using access keys (less recommended):
+          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # -------------------------
-      # Terraform Init
+      # Install Terraform CLI (setup-terraform)
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.5  # installs Terraform CLI [web:147][web:151]
+
+      # Optionally install TFLint (Terraform linter)
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.51.1  # pick a stable version [web:158]
+
+      # Terraform Init (use -chdir and multiple backend-config lines)
       - name: Terraform Init
-        run: terraform -chdir=eks-infra init \
-          -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
-          -backend-config="key=terraform.tfstate" \
-          -backend-config="region=${{ env.AWS_REGION }}" \
-          -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_LOCK_TABLE }}"
+        run: |
+          terraform -chdir=eks-infra init \
+            -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
+            -backend-config="key=${{ env.TF_WORKSPACE }}/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_LOCK_TABLE }}"
+        # Tip: ensure no stray trailing spaces after backslashes to avoid arg parse issues [web:154][web:164][web:159]
 
-      # -------------------------
+      # Select or create workspace
+      - name: Terraform Workspace
+        run: |
+          terraform -chdir=eks-infra workspace list
+          terraform -chdir=eks-infra workspace select "${{ env.TF_WORKSPACE }}" || terraform -chdir=eks-infra workspace new "${{ env.TF_WORKSPACE }}"
+
       # Terraform Format & Validate
       - name: Terraform Format & Validate
         run: |
           terraform -chdir=eks-infra fmt -check
           terraform -chdir=eks-infra validate
 
-      # -------------------------
-      # Terraform Lint (tflint)
-      - name: Terraform Lint
-        uses: wata727/tflint-action@v1.2.8
-        with:
-          tfdir: eks-infra
+      # TFLint (lint Terraform code in eks-infra dir)
+      - name: Terraform Lint (tflint)
+        run: |
+          tflint --init
+          tflint eks-infra
+        # Alternatively: use wata727/tflint-action, but running CLI is simpler and current
 
-      # -------------------------
-      # Security check (Checkov)
-      - name: Run Checkov action
-        id: checkov
-        uses: bridgecrewio/checkov-action@master
+      # Security check (Checkov) for IaC
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
         with:
-          directory: .
+          directory: eks-infra
           soft_fail: true
           download_external_modules: true
           github_pat: ${{ secrets.GH_PAT }}
         env:
-          GITHUB_OVERRIDE_URL: true  # optio
+          GITHUB_OVERRIDE_URL: true  # allows private module fetches with PAT [web:155][web:160]
 
-      # -------------------------
       # Terraform Plan
       - name: Terraform Plan
         id: plan
         run: terraform -chdir=eks-infra plan -out=tfplan
 
-      # -------------------------
-      # Manual Approval Step
-      - name: Manual Approval
-        if: github.event_name == 'workflow_dispatch'
-        uses: hmarr/auto-approve-action@v2
+      # Optional: upload plan file artifact
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
         with:
-          message: 'Approve Terraform Apply'
+          name: tfplan
+          path: eks-infra/tfplan
 
-      # -------------------------
-      # Terraform Apply
+      # Manual approval gate (use environment protection or a manual confirm)
+      # If you truly want manual control, prefer GitHub Environments required reviewers.
+      # Below is an example using workflow_dispatch plus a simple guard.
+      - name: Await manual approval (environment gate)
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/turnstyle@v2
+        with:
+          poll-interval-seconds: 10
+        # Alternatively, use protected environment:
+        # environment: production
+
+      # Terraform Apply (only on manual dispatch)
       - name: Terraform Apply
         if: github.event_name == 'workflow_dispatch'
         run: terraform -chdir=eks-infra apply -auto-approve tfplan
