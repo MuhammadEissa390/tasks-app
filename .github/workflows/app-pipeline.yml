@@ -40,7 +40,7 @@ jobs:
 
       - name: Push to registries
         run: |
-          IMAGE_BACKEND=ghcr.io/${{ env.REPO_OWNER_LC }}/tasks-app-backend
+          IMAGE_BACKEND=ghcr.io/${{ env.REPO_LOWER }}/tasks-app-backend
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:${{ github.sha }}
           docker tag tasks-app-backend:latest $IMAGE_BACKEND:latest
           docker push $IMAGE_BACKEND:${{ github.sha }}
