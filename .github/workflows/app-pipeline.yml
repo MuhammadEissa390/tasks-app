@@ -48,22 +48,22 @@ jobs:
         
       # Security Scan with Trivy
       - name: Security Scan backend with Trivy
-        uses: aquasecurity/trivy-action@0.16.1
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
-          format: 'table'
-          exit-code: '0' # set to 1 to fail on HIGH/CRITICAL
-          vuln-type: 'os'
-          severity: 'HIGH,CRITICAL'
+          format: sarif
+          output: trivy-results.sarif
+          vuln-type: 'os,library'
+          
 
       - name: Security Scan Frontend with Trivy
-        uses: aquasecurity/trivy-action@0.16.1
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
-          format: 'table'
-          exit-code: '0'
-          vuln-type: 'os'
-          severity: 'HIGH,CRITICAL'
+          format: sarif
+          output: trivy-results.sarif
+          vuln-type: 'os,library'
+        
 
       # Sign Image with Cosign
       - name: Sign Image with Cosign
