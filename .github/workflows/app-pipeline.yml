@@ -33,18 +33,23 @@ jobs:
           echo "Lowercase: ${{ env.REPO_LOWER }}"
 
       # Build Image With Docker Composerun: 
-      - name: Build images with Docker Compose
+      - name: Build and Run with Docker Compose
         run: |
-          IMAGE_TAG=ghcr.io/${{ env.REPO_LOWER }}
-          docker compose build \
-            --build-arg IMAGE_TAG=$IMAGE_TAG \
-            --build-arg GIT_SHA=${{ github.sha }}
+          docker compose up -d --build
+          docker ps
 
       - name: Push images with Docker Compose
         run: docker compose push
         
-      - name: List Docker Images
-        run: docker images 
+      - name: Push Backend Image
+        run: |
+          docker tag tasks-app-backend:latest ghcr.io/${{ github.repository_owner }}/tasks-app/backend:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository_owner }}/tasks-app/backend:${{ github.sha }}
+
+      - name: Push Frontend Image
+        run: |
+          docker tag tasks-app-frontend:latest ghcr.io/${{ github.repository_owner }}/tasks-app/frontend:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository_owner }}/tasks-app/frontend:${{ github.sha }}
         
       # Security Scan with Trivy
       - name: Security Scan backend with Trivy
