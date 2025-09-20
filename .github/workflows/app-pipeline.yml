@@ -3,10 +3,8 @@ name: Tasks_App CI/CD
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - "app/**"
-      - "helm/**"
-
+  workflow_dispatch:
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -42,8 +40,4 @@ jobs:
         run: |
           echo "${{ secrets.COSIGN_PASSWORD }}" | cosign sign --key cosign.key ghcr.io/${{ github.repository }}/app:${{ github.sha }}
 
-      - name: Helm Deploy (direct)
-        run: |
-          helm upgrade --install myapp ./helm \
-            --set image.repository=ghcr.io/${{ github.repository }}/app \
-            --set image.tag=${{ github.sha }}
+  
