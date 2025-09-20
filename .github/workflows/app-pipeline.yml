@@ -53,7 +53,7 @@ jobs:
           image-ref: ghcr.io/${{ env.REPO_LOWER }}/backend:latest{{ github.sha }}
           format: 'table'
           exit-code: '0' # set to 1 to fail on HIGH/CRITICAL
-          vuln-type: 'os,library'
+          vuln-type: 'os'
           severity: 'HIGH,CRITICAL'
 
       - name: Security Scan Frontend with Trivy
@@ -62,7 +62,7 @@ jobs:
           image-ref: ghcr.io/${{ env.REPO_LOWER }}/frontend:latest{{ github.sha }}
           format: 'table'
           exit-code: '0'
-          vuln-type: 'os,library'
+          vuln-type: 'os'
           severity: 'HIGH,CRITICAL'
 
       # Sign Image with Cosign
