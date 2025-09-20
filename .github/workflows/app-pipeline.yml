@@ -37,14 +37,14 @@ jobs:
         run: |
           BACKEND_IMAGE=ghcr.io/${{ env.REPO_LOWER }}/backend:${{ github.sha }}
           echo "BACKEND_IMAGE=$BACKEND_IMAGE" >> $GITHUB_ENV
-          docker build -t $BACKEND_IMAGE ./tasks-app/backend
+          docker build -t $BACKEND_IMAGE ./backend
           docker push $BACKEND_IMAGE
 
       - name: Build & Push Frontend
         run: |
           FRONTEND_IMAGE=ghcr.io/${{ env.REPO_LOWER }}/frontend:${{ github.sha }}
           echo "FRONTEND_IMAGE=$FRONTEND_IMAGE" >> $GITHUB_ENV
-          docker build -t $FRONTEND_IMAGE ./tasks-app/frontend
+          docker build -t $FRONTEND_IMAGE ./frontend
           docker push $FRONTEND_IMAGE
       # Security Scan with Trivy
       - name: Security Scan with Trivy
