@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: your-registry/frontend:latest
+        image: ghcr.io/muhammadeissa390/tasks-app/tasks-app-frontend
         ports:
         - containerPort: 80
           # no root filesystem write required
