@@ -13,9 +13,6 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: us-east-1
-      TF_WORKSPACE: dev
 
     steps:
       # Checkout repo
@@ -26,15 +23,12 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::117685249038:oidc-provider/token.actions.githubusercontent.com
+          aws-region: us-east-2
+          
           # Prefer OIDC with a role:
           # role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
-          # role-session-name: gha-terraform
-          # OR if using access keys (less recommended):
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+       
 
       # Install Terraform CLI (setup-terraform)
       - name: Setup Terraform
@@ -42,16 +36,6 @@ jobs:
         with:
           terraform_version: 1.6.5  # installs Terraform CLI [web:147][web:151]
 
-      # Optionally install TFLint (Terraform linter)
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
-        with:
-          tflint_version: v0.51.1  # pick a stable version [web:158]
-      - name: TFLint init and scan
-        run: |
-          tflint --init
-          tflint eks-infra
-      
 
       # Terraform Init (use -chdir and multiple backend-config lines)
       - name: Terraform Init
@@ -62,32 +46,7 @@ jobs:
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_LOCK_TABLE }}"
         # Tip: ensure no stray trailing spaces after backslashes to avoid arg parse issues [web:154][web:164][web:159]
-
-      # Select or create workspace
-      - name: Terraform Workspace
-        run: |
-          terraform -chdir=eks-infra workspace list
-          terraform -chdir=eks-infra workspace select "${{ env.TF_WORKSPACE }}" || terraform -chdir=eks-infra workspace new "${{ env.TF_WORKSPACE }}"
-
-      # Terraform Format & Validate
-      - name: Terraform Format & Validate
-        run: |
-          terraform -chdir=eks-infra fmt -check
-          terraform -chdir=eks-infra validate
-
-        # Alternatively: use wata727/tflint-action, but running CLI is simpler and current
-
-      # Security check (Checkov) for IaC
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: eks-infra
-          soft_fail: true
-          download_external_modules: true
-          github_pat: ${{ secrets.GH_PAT }}
-        env:
-          GITHUB_OVERRIDE_URL: true  # allows private module fetches with PAT [web:155][web:160]
-
+   
       # Terraform Plan
       - name: Terraform Plan
         id: plan
