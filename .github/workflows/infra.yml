@@ -39,14 +39,9 @@ jobs:
 
       # Terraform Init (use -chdir and multiple backend-config lines)
       - name: Terraform Init
-        run: |
-          terraform -chdir=eks-infra init \
-            -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
-            -backend-config="key=${{ env.TF_WORKSPACE }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
-            -backend-config="dynamodb_table=${{ secrets.TF_DYNAMODB_LOCK_TABLE }}"
-        # Tip: ensure no stray trailing spaces after backslashes to avoid arg parse issues [web:154][web:164][web:159]
-   
+        run:  terraform -chdir=eks-infra init 
+          
+     
       # Terraform Plan
       - name: Terraform Plan
         id: plan
