@@ -57,13 +57,13 @@ jobs:
       # Manual approval gate (use environment protection or a manual confirm)
       # If you truly want manual control, prefer GitHub Environments required reviewers.
       # Below is an example using workflow_dispatch plus a simple guard.
-      - name: Await manual approval (environment gate)
-        if: github.event_name == 'workflow_dispatch'
-        uses: softprops/turnstyle@v2
-        with:
-          poll-interval-seconds: 10
-        # Alternatively, use protected environment:
-        # environment: production
+      # - name: Await manual approval (environment gate)
+      #   if: github.event_name == 'workflow_dispatch'
+      #   uses: softprops/turnstyle@v2
+      #   with:
+      #     poll-interval-seconds: 10
+      #   # Alternatively, use protected environment:
+      #   # environment: production
 
       # Terraform Apply (only on manual dispatch)
       - name: Terraform Apply
