@@ -90,19 +90,6 @@ jobs:
 
 
 
-      #  Configure kubeconfig for EKS
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::117685249038:role/terrafor-role 
-          aws-region: us-east-1
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name my-eks-cluster --region us-east-1
-
-
-
       #  Deploy app using Helm
       - name: Deploy app
         run: |
