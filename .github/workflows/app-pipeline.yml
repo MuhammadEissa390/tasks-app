@@ -89,13 +89,5 @@ jobs:
         uses: sigstore/cosign-installer@main
 
 
-
-      #  Deploy app using Helm
-      - name: Deploy app
-        run: |
-          kubectl apply -f k8s-manifests/ \
-            --namespace three-tier \
-            --create-namespace
-    
         
           
